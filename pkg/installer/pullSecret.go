@@ -32,6 +32,8 @@ func GetPullSecret() string {
 
 	var Token token
 
+	fmt.Println(`Please provide a Red Hat credentials (the account used to login to the access.redhat.com portal) to get the pull-secret.
+This pull-secret will be used during the installation to pull the container images from Red Hat registries.`)
 	// Gather the username from a Red Hat account
 	fmt.Print("Username: ")
 	reader := bufio.NewReader(os.Stdin)
