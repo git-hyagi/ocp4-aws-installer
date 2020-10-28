@@ -10,9 +10,6 @@ import (
 	"time"
 )
 
-// TO-DO: [BUG] need to find a way to gather this through api or another automated method!!!
-const client_expected_file_size = "25908982"
-
 const oc_client = "/usr/bin/oc"
 const client_download_path = "/tmp"
 
@@ -38,8 +35,14 @@ func DownloadClient(oc_client_version string) {
 			wg.Done()
 		}(client_download_path, client_file_name, client_download_url)
 
+		// retrieve the file size
+		client_expected_file_size, err := common.FileSize(client_download_url)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
 		// sizeFloat keeps the expected openshift-installer file size
-		sizeFloat, _ := strconv.ParseFloat(string(client_expected_file_size), 64)
+		sizeFloat, _ := strconv.ParseFloat(client_expected_file_size, 64)
 
 		// wait until the download finishes
 		for {
@@ -68,13 +71,13 @@ func DownloadClient(oc_client_version string) {
 
 		log.Println("INFO extracting the tar.gz file")
 		// extract file
-		if err := common.Ungzip(client_download_path+"/"+client_file_name, client_download_path); err != nil {
+		if err = common.Ungzip(client_download_path+"/"+client_file_name, client_download_path); err != nil {
 			panic(err)
 		}
 
 		log.Println("INFO moving the installer to /usr/bin")
 		// move the binary to /usr/bin/ dir
-		_, err := exec.Command("/usr/bin/sudo", "/usr/bin/mv", client_download_path+"/oc", oc_client).CombinedOutput()
+		_, err = exec.Command("/usr/bin/sudo", "/usr/bin/mv", client_download_path+"/oc", oc_client).CombinedOutput()
 		if err != nil {
 			panic(err)
 		}

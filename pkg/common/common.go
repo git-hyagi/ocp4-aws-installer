@@ -88,3 +88,14 @@ func Ungzip(source, target string) error {
 	return err
 
 }
+
+func FileSize(url string) (string, error) {
+	// Get the data
+	resp, err := http.Get(url)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	return resp.Header.Get("Content-Length"), nil
+}

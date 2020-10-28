@@ -10,9 +10,6 @@ import (
 	"time"
 )
 
-// TO-DO: [BUG] need to find a way to gather this through api or another automated method!!!
-const expected_file_size = "92438128"
-
 const ocp_command = "/usr/bin/openshift-install"
 const file_download_path = "/tmp"
 
@@ -38,8 +35,14 @@ func OCP4Installer(ocp_version string) {
 			wg.Done()
 		}(file_download_path, file_name, download_url)
 
+		// retrieve the file size
+		expected_file_size, err := common.FileSize(download_url)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
 		// sizeFloat keeps the expected openshift-installer file size
-		sizeFloat, _ := strconv.ParseFloat(string(expected_file_size), 64)
+		sizeFloat, _ := strconv.ParseFloat(expected_file_size, 64)
 
 		// wait until the download finishes
 		for {
@@ -68,13 +71,13 @@ func OCP4Installer(ocp_version string) {
 
 		log.Println("INFO extracting the tar.gz file")
 		// extract file
-		if err := common.Ungzip(file_download_path+"/"+file_name, file_download_path); err != nil {
+		if err = common.Ungzip(file_download_path+"/"+file_name, file_download_path); err != nil {
 			panic(err)
 		}
 
 		log.Println("INFO moving the installer to /usr/bin")
 		// move the binary to /usr/bin/ dir
-		_, err := exec.Command("/usr/bin/sudo", "/usr/bin/mv", file_download_path+"/openshift-install", ocp_command).CombinedOutput()
+		_, err = exec.Command("/usr/bin/sudo", "/usr/bin/mv", file_download_path+"/openshift-install", ocp_command).CombinedOutput()
 		if err != nil {
 			panic(err)
 		}
